@@ -27,6 +27,9 @@ logic [15:0] cur_addr;
 logic [31:0] cur_write_data;
 //logic [512:0] memory_block;
 logic [ 7:0] tstep;
+	
+logic [31:0] TEMPORARY[8]; //ZACK ADDED THIS TO TEST A NEW SOLUTION FOR WRITING SECTION
+logic [15:0] temporary_write_address; //ZACK ADDED THIS TO TEST A NEW SOLUTION FOR WRITING SECTION
 
 
 // SHA256 K constants
@@ -146,6 +149,8 @@ begin
 
 		// get staring address of message 
 	   cur_addr       <= mem_addr;
+	       
+	       temporary_write_address <= output_addr; //ZACK ADDED THIS TO TEST A NEW SOLUTION FOR WRITING SECTION
 
 		// clear write data to memory
 	   cur_write_data <= 0;
@@ -264,6 +269,40 @@ begin
     // h0 to h7 each are 32 bit hashes, which makes up total 256 bit value
     // h0 to h7 after compute stage has final computed hash value
     // write back these h0 to h7 to memory starting from output_addr
+	  
+	  
+	  //ZACK ADDED THIS TO TEST A NEW SOLUTION FOR WRITING SECTION
+	/*
+WRITE: begin
+			TEMPORARY[0] <= h0;
+			TEMPORARY[1] <= h1;
+			TEMPORARY[2] <= h2;
+			TEMPORARY[3] <= h3;
+			TEMPORARY[4] <= h4;
+			TEMPORARY[5] <= h5;
+			TEMPORARY[6] <= h6;
+			TEMPORARY[7] <= h7;
+			cur_we <= 1;
+			cur_addr <= temporary_write_address;
+			cur_write_data <= h0;
+		if(offset < 8) 
+		begin
+			cur_write_data <= TEMPORARY[offset+1];
+			offset <= offset + 1;
+			state <= WRITE;
+		end
+		
+		else begin
+		state <= IDLE;
+		end
+    end
+   endcase
+  end
+  
+  */
+	  //couldn't we do something like this above?
+	  
+	  
     WRITE: begin
 	if(i<8) begin
 	// Generate write request to memory starting from output_addr
