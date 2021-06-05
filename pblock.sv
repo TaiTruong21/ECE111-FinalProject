@@ -9,9 +9,10 @@ module pblock (input               clk,
 
 logic [31:0] w[16];
 logic [31:0] A, B, C, D, E, F, G, H;
-logic [31:0] temp;
+	logic [31:0] temp[16]; //sixteen bc number of nonces
 logic [31:0] h[8];
 logic [31:0] h2[8];
+
 
 parameter int p2[16] = '{
     32'h00000000,32'h00000000,32'h00000000,32'h80000000,
@@ -28,13 +29,36 @@ parameter int p3[16] = '{
 };
 
 function logic [31:0] rightrotate(input [31:0] x, input  [7:0] r);
-
+  begin
+	  rightrotate = (x >> r) | (x << (32-r)); //ADDED THIS
+  end
 endfunction
 
+	
+	
 logic [31:0] t1, t2;
 
 assign t1 = temp;
 assign t2 = 
+	
+	//is this the sort of thing we need to do??
+	
+	/*
+	function logic [255:0] sha_operation(input logic [31:0] A, B, C, D, E, F, G, temp);
+  		logic [31:0] S1, S0, ch, maj, t1, t2; // internal signals
+  		begin
+    		S1 = rightrotate(E, 6) ^ rightrotate(E, 11) ^ rightrotate(E, 25);
+    		ch = (E & F) ^ ((~E) & G);
+    		t1 = S1 + ch + temp;
+    		S0 = rightrotate(A, 2) ^ rightrotate(A, 13) ^ rightrotate(A, 22);
+    		maj = (A & B) ^ (A & C) ^ (B & C);
+    		t2 = S0 + maj;
+    		sha_operation = {t1 + t2, A, B, C, D + t1, E, F, G};
+  		end
+  	endfunction
+  */
+	
+	
 
 assign hout = h[0];
 
@@ -50,6 +74,17 @@ assign h1[6] = h[6] + g;
 assign h1[7] = h[7] + h;
 
 logic [31:0] wt;
+	
+	//is this the sort of thing we need to do??
+	/*
+	  function logic [31:0] wt(input logic [3:0] n);
+    		logic [31:0] s0, s1;
+	
+		 s0 = rightrotate(w[n][1], 7) ^ rightrotate(w[n][1], 18) ^ (w[n][1]>>3);
+		 s1 = rightrotate(w[n][14], 17) ^ rightrotate(w[n][14], 19) ^ (w[n][14]>>10);
+		 wt = w[n][0] + s0+ w[n][9] + s1;      
+  	  endfunction
+  */
 
 // A-H, temp
 always_ff @(posedge clk) 
