@@ -111,7 +111,7 @@ always_ff @(posedge clk) begin
 			 w[15] <=    // come from mem
         1: begin // COMPUTE2	w[15] <= ...
            if (t<2)
-			  w[15] <= 
+		   w[15] <= mem_read_data; //FILLED THIS IN
            else if (t == 2)
 			  w[15] <= n;
            else
