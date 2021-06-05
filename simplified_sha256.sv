@@ -242,6 +242,15 @@ begin
 			h5 <= h5 + f;
 			h6 <= h6 + g;
 			h7 <= h7 + h;
+		
+		 //a <= a + h0; //DO WE NEED THESE HERE?
+		 //b <= b + h1;
+		 //c <= c + h2;
+		 //d <= d + h3;
+		 //e <= e + h4;
+		 //f <= f + h5;
+		 //g <= g + h6;
+		 //h <= h + h7;
 
 	    // increment block index
             j <= j+1;  // not sure
