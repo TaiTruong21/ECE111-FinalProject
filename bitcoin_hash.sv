@@ -19,8 +19,10 @@ parameter num_nonces = 16;
 
 logic [ 4:0] state;	// see params above; could have used enums instead
 logic [ 4:0] wc; //write counters
+logic [31:0] w[num_nonces][16];
 logic [ 6:0] t;
 logic [31:0] k1;
+logic [31:0] h[num_nonces][8];
 logic [31:0] hout[num_nonces];
 
 parameter int k[64] = '{
@@ -95,20 +97,30 @@ always_ff @(posedge clk, negedge reset_n)
 	k1       <= k[t+1];
         t        <= t + 1;
       end
-      COMPUTE1: begin //START FROM HERE ==============================
+      COMPUTE1: begin //2:34PM
         if (!(t[6] && t[0])) begin // t<65
-          if (t<15) 
-            mem_addr <= 
-          else 
-            mem_addr <= 
-          k1 <= 
-          t  <= 
-        end 
-        else begin
-          t        <= 
-          mem_addr <= 
-          state    <= PREP21;
-        end
+		for (int i = 0; i < num_nonces; i++)
+			begin
+				for (int j = 0; j < 15; j++)
+					w[i][j] <= w[i][j+1];
+			end
+		if (t<15) begin
+			for (int i = 0; i < num_nonces; i++)
+				w[i][15] <= mem_read_data;
+				mem_addr <= mem_addr + 1;
+		        end else begin
+				for (int i = 0; i < num_nonces; i++)
+					w[i][15] <= wtnew(i); //REMEMBER TO DEFINE WTNEW SOMEHWERE UP THERE--start hereeeeeeeeeeeeeee
+					mem_addr <= message_addr + 16;
+		        end
+				  t <= t + 1;
+				  state <= COMPUTE1;
+				  k1 <= k[t+1];
+				end else begin 
+				  t <= 0;
+				  mem_addr <= mem_addr + 1;
+				  state <= PREP21;
+				end
       end
       PREP21: begin
         state    <= PREP22;
