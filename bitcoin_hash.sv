@@ -50,7 +50,7 @@ generate
 	  .hout      (hout[q]));
   end
 endgenerate
-
+//ZACK STARTED ADDING IN THIS FUNCTION HERE-------------------------------------------SAT, JUNE 5
 always_ff @(posedge clk, negedge reset_n) 
   if(!reset_n) begin
     state <= IDLE;
@@ -59,27 +59,43 @@ always_ff @(posedge clk, negedge reset_n)
   else
     case(state)
       IDLE:	if(start) begin
-        mem_we   <= 
-        mem_addr <= 
-        t        <= 
+        mem_we   <= 0;
+        mem_addr <= message_addr;
+        t        <= 0;
         state    <= PREP11;
       end
       PREP11: begin
         state    <= PREP12;
-        mem_addr <= 
+        mem_addr <= mem_addr + 1;
       end
-	  PREP12: begin
-        state    <= PREP13;
-        mem_addr <= 
-        k1       <= 
+      PREP12: begin
+	      for (int count = 0; count < num_nonces; count++) begin
+			 w[count][15] <= mem_read_data;
+		         h[count][0] <= 32'h6a09e667;
+	     	      h[count][1] <= 32'hbb67ae85;
+		      h[count][2] <= 32'h3c6ef372;
+		      h[count][3] <= 32'ha54ff53a;
+		      h[count][4] <= 32'h510e527f;
+		      h[count][5] <= 32'h9b05688c;
+		      h[count][6] <= 32'h1f83d9ab;
+		      h[count][7] <= 32'h5be0cd19;
+	      end //end for loop
+        state <= PREP13;
+        mem_addr <= mem_addr + 1;
+        k1 <= k[t];
       end
 	  PREP13: begin
-        mem_addr <= 
+		  for (int i = 0; i < num_nonces; i++) begin
+			  for (int j = 0; j < 15; j++)
+				  w[i][j] <= w[i][j + 1];
+			  	  w[i][15] <= mem_read_data;
+		  end
+        mem_addr <= mem_addr + 1;
         state    <= COMPUTE1;
-        k1       <= 
-        t        <= 
+	k1       <= k[t+1];
+        t        <= t + 1;
       end
-      COMPUTE1: begin
+      COMPUTE1: begin //START FROM HERE ==============================
         if (!(t[6] && t[0])) begin // t<65
           if (t<15) 
             mem_addr <= 
