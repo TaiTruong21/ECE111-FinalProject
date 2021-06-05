@@ -123,53 +123,53 @@ always_ff @(posedge clk, negedge reset_n)
 				end
       end
       PREP21: begin
-        state    <= PREP22;
-        mem_addr <= 
-        k1       <= 
+        state    <= PREP22; //SO I AM CONFUSED--SO FROM THIS POINT FORWARD I WILL NOT PROVIDE THE IF ELSE STATEMENTS AND WILL JUST FILL IN THE VARIABLES
+        mem_addr <= mem_addr + 1;
+	k1       <= k[t];
       end
       PREP22: begin
-        mem_addr <= 
+        mem_addr <= mem_addr + 1;
         state    <= COMPUTE2;
-        k1       <= 
-        t        <= 
+	k1       <= k[t + 1];
+        t        <= t + 1;
       end
       COMPUTE2: begin
         if (!(t[6] && t[0])) begin // t<65
           if (t<2) 
-            mem_addr <= 
-          k1 <= 
-          t <= 
+            mem_addr <= mem_addr + 1;
+	  k1 <= k[t+1];
+          t <= t + 1;
         end 
         else begin
-          t     <= 
+          t     <= 0;
           state <= PREP31;
         end
       end
       PREP31: begin
         state <= PREP32;
-        k1    <= 
+	      k1    <= k[t];
       end
       PREP32: begin
           state <= COMPUTE3;
-          k1    <= 
-          t     <= 
+	  k1    <= k[t+1];
+          t     <= t + 1;
       end
 	  COMPUTE3: begin
         if (!(t[6] && t[0])) begin // t<65
-          k1 <= 
-          t  <= 
+	  k1 <= k[t+1]
+          t  <= t + 1;
         end 
         else begin
-          wc    <= 
+	  wc    <= 1; //what the heck is wc here??? (i just put 1)
           state <= WRITE;
         end
       end
       WRITE: begin
         if (wc < num_nonces) begin
-          mem_we         <= 
-          mem_addr       <= 
-          mem_write_data <= 
-          wc             <= 
+	  mem_we         <= 1; //what is mem_we here? (i just put 1)
+          mem_addr       <= output_addr + wc;
+	  mem_write_data <= h[wc][0];
+          wc             <= wc + 1;
         end 
         else begin
           state <= IDLE;
