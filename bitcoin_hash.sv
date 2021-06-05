@@ -110,7 +110,7 @@ always_ff @(posedge clk, negedge reset_n)
 				mem_addr <= mem_addr + 1;
 		        end else begin
 				for (int i = 0; i < num_nonces; i++)
-					w[i][15] <= wtnew(i); //REMEMBER TO DEFINE WTNEW SOMEHWERE UP THERE--start hereeeeeeeeeeeeeee
+					w[i][15] <= wt(i); //I THINK IT IS WT IN THE PBLOCK
 					mem_addr <= message_addr + 16;
 		        end
 				  t <= t + 1;
