@@ -121,7 +121,7 @@ always_ff @(posedge clk) begin
         default: begin
           if (t<7) begin
 		    w[15] <=  h2[0];
-            for (int m = 0; m < 7; m++) h2[m] <=
+		  for (int m = 0; m < 7; m++) h2[m] <= //is this meant to be here?
           end
           else
             w[15] <= p3[t];
