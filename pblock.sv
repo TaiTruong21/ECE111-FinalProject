@@ -91,7 +91,7 @@ always_ff @(posedge clk)
   if (!(t[6] && t[0])) begin // t<65
     if (state[4]) begin // COMPUTE1, COMPUTE2, COMPUTE3
 	   temp <= 
-	    {A, B, ... } <= //ZACK'S NOTE FROM LECTURE: concatenation of t1+t2, A:C, D+t1, E:G 
+	    {A, B, ... } <= //is this concatenation of t1+t2, A:C, D+t1, E:G  ?
     end 
     else begin
 	   temp <=  w[15] +k1 +
