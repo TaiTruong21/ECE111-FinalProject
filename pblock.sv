@@ -108,10 +108,11 @@ always_ff @(posedge clk) begin
     if (t<15) begin
       case (state[1:0])
         0: // COMPUTE1
-			 w[15] <=    // come from mem
+		w[15] <=    mem_read_data; // come from mem
+	      //zack's note: i don't know for sure
         1: begin // COMPUTE2	w[15] <= ...
            if (t<2)
-		   w[15] <= mem_read_data; //FILLED THIS IN
+		   w[15] <= mem_read_data; //FILLED THIS IN--
            else if (t == 2)
 			  w[15] <= n;
            else
