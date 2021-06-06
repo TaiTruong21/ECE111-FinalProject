@@ -41,21 +41,22 @@ logic [31:0] t1, t2;
 assign t1 = temp;
 assign t2 = 
 	
-	//is this the sort of thing we need to do??
-	
+	//this is the instructor's hint
 	/*
-	function logic [255:0] sha_operation(input logic [31:0] A, B, C, D, E, F, G, temp);
-  		logic [31:0] S1, S0, ch, maj, t1, t2; // internal signals
-  		begin
-    		S1 = rightrotate(E, 6) ^ rightrotate(E, 11) ^ rightrotate(E, 25);
-    		ch = (E & F) ^ ((~E) & G);
-    		t1 = S1 + ch + temp;
-    		S0 = rightrotate(A, 2) ^ rightrotate(A, 13) ^ rightrotate(A, 22);
-    		maj = (A & B) ^ (A & C) ^ (B & C);
-    		t2 = S0 + maj;
-    		sha_operation = {t1 + t2, A, B, C, D + t1, E, F, G};
-  		end
-  	endfunction
+function logic [255:0] sha256_op(input logic [31:0] a, b, c, d, e, f, g, h, w,
+                                 input logic [7:0] t);
+    logic [31:0] S1, S0, ch, maj, t1, t2; // internal signals
+begin
+    S1 = rightrotate(e, 6) ^ rightrotate(e, 11) ^ rightrotate(e, 25);
+    ch = (e & f) ^ ((~e) & g);
+    t1 = h + S1 + ch + k[t] + w;
+    S0 = rightrotate(a, 2) ^ rightrotate(a, 13) ^ rightrotate(a, 22);
+    maj = (a & b) ^ (a & c) ^ (b & c);
+    t2 = S0 + maj;
+
+    sha256_op = {t1 + t2, a, b, c, d + t1, e, f, g};
+end
+endfunction
   */
 	
 	
@@ -87,15 +88,16 @@ logic [31:0] wt;
   */
 
 // A-H, temp
+
 always_ff @(posedge clk) 
   if (!(t[6] && t[0])) begin // t<65
     if (state[4]) begin // COMPUTE1, COMPUTE2, COMPUTE3
-	   temp <= 
-	    {A, B, ... } <= //is this concatenation of t1+t2, A:C, D+t1, E:G  ?
+	   temp <= w[15] + k1 + G;
+	   {A, B, ... } <=  // concatenation of t1+t2, A:C, D+t1, E:G
     end 
     else begin
-	   temp <=  w[15] +k1 +
-	   {A, B, ... } <= {h[0],h[1],...};
+	   temp <= w[15] + k1 + h[7];
+	    {A, B, ... } <= {h[0], h[1], ... };
     end
   end
 
@@ -121,7 +123,7 @@ always_ff @(posedge clk) begin
         default: begin
           if (t<7) begin
 		    w[15] <=  h2[0];
-		  for (int m = 0; m < 7; m++) h2[m] <= //is this meant to be here?
+		  for (int m = 0; m < 7; m++) h2[m] <= //is this meant to be here? instructor said: // move h2[15:1] down to h2[14:0]
           end
           else
             w[15] <= p3[t];
@@ -132,10 +134,10 @@ always_ff @(posedge clk) begin
        w[15] <= wt;
 
       if (!state[1])  // not COMPUTE3
-            {h2[0], h2[1], h2[2], h2[3], h2[4], h2[5], h2[6], h2[7]} 
+      {h2[0], h2[1], h2[2], h2[3], h2[4], h2[5], h2[6], h2[7]} //instructor said:          //   h2[i] <= h1[i] 
       else if (state[4:1]==4'b0101) begin // PREP31, PREP32
-		w[15] <= 
-        for (int m = 0; m < 7; m++) h2[m] <= 
+	      w[15] <= //instrucvtor said as above in t<7 case IMPORTANTTTTTTTTTTTT
+	   for (int m = 0; m < 7; m++) h2[m] <= //AS ABOVE
       end 
     else 
 		w[15] <=     // Fetch more data
