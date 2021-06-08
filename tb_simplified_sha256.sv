@@ -25,9 +25,10 @@ int            cycles;
 int            m, n, t;
 
 // instantiate your design
-simplified_sha256 #(.size(message_words*4)) simplified_sha256_inst (.clk, .reset_n, .start, .message_addr, 
+/*simplified_sha256 #(.size(message_words*4)) simplified_sha256_inst (.clk, .reset_n, .start, .message_addr, 
     .output_addr, .done,
-    .mem_clk, .mem_we, .mem_addr, .mem_write_data, .mem_read_data);
+    .mem_clk, .mem_we, .mem_addr, .mem_write_data, .mem_read_data); */
+simplified_sha256 #(.size(message_words*4)) simplified_sha256_inst (.*);
 
 // SHA256 K constants
 parameter int k[0:63] = '{

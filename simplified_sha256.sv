@@ -27,9 +27,9 @@ logic [15:0] cur_addr;
 logic [31:0] cur_write_data;
 //logic [512:0] memory_block;
 logic [ 7:0] tstep;
-	
-logic [31:0] TEMPORARY[8]; //ZACK ADDED THIS TO TEST A NEW SOLUTION FOR WRITING SECTION
-logic [15:0] temporary_write_address; //ZACK ADDED THIS TO TEST A NEW SOLUTION FOR WRITING SECTION
+
+//logic [31:0] TEMPORARY[8]; //ZACK ADDED THIS TO TEST A NEW SOLUTION FOR WRITING SECTION
+//logic [15:0] temporary_write_address; //ZACK ADDED THIS TO TEST A NEW SOLUTION FOR WRITING SECTION
 
 
 // SHA256 K constants
@@ -52,9 +52,9 @@ assign tstep = (i - 1);
 // Function to determine number of blocks in memory to fetch
 function logic [15:0] determine_num_blocks(input logic [31:0] size);
 
-  if (size%64 < 56 )				            // hint: block size = 64
+  if (size%64 <56 )				            // hint: block size = 64
     determine_num_blocks = size/64 + 1;
-  else
+  else 
     determine_num_blocks = size/64 + 2;   
   $display("size = %d, num_blocks = %d",size,determine_num_blocks);
 
@@ -148,9 +148,7 @@ begin
 	   cur_we         <= 0;
 
 		// get staring address of message 
-	   cur_addr       <= mem_addr;
-	       
-	       temporary_write_address <= output_addr; //ZACK ADDED THIS TO TEST A NEW SOLUTION FOR WRITING SECTION
+	   cur_addr       <= message_addr;
 
 		// clear write data to memory
 	   cur_write_data <= 0;
@@ -219,8 +217,8 @@ begin
 	    // Extend the first 16 words into the remaining 48 words w[15..63] of the message schedule array
 	    else begin
 	    // w[i] := w[i-15] + s0 + w[i-6] + s1
-            w[15] <= w[0] + (rightrotate(w[1],7)^ rightrotate(w[1], 18) ^ rightrotate(w[1],3))
-					+ w[9] + (rightrotate(w[14],17)^ rightrotate(w[14], 19) ^ rightrotate(w[14],10));// function of w[0], right-rotated/shifted w[1], w[9], right-rotated/shifted w[14] 
+            w[15] <= w[0] + (rightrotate(w[1],7)^ rightrotate(w[1], 18) ^ (w[1] >> 3))
+					+ w[9] + (rightrotate(w[14],17)^ rightrotate(w[14], 19) ^ (w[14] >> 10) );// function of w[0], right-rotated/shifted w[1], w[9], right-rotated/shifted w[14] 
 
             end
 
@@ -247,15 +245,6 @@ begin
 			h5 <= h5 + f;
 			h6 <= h6 + g;
 			h7 <= h7 + h;
-		
-		 //a <= a + h0; //DO WE NEED THESE HERE?
-		 //b <= b + h1;
-		 //c <= c + h2;
-		 //d <= d + h3;
-		 //e <= e + h4;
-		 //f <= f + h5;
-		 //g <= g + h6;
-		 //h <= h + h7;
 
 	    // increment block index
             j <= j+1;  // not sure
@@ -269,40 +258,7 @@ begin
     // h0 to h7 each are 32 bit hashes, which makes up total 256 bit value
     // h0 to h7 after compute stage has final computed hash value
     // write back these h0 to h7 to memory starting from output_addr
-	  
-	  
-	  //ZACK ADDED THIS TO TEST A NEW SOLUTION FOR WRITING SECTION
-	/*
-WRITE: begin
-			TEMPORARY[0] <= h0;
-			TEMPORARY[1] <= h1;
-			TEMPORARY[2] <= h2;
-			TEMPORARY[3] <= h3;
-			TEMPORARY[4] <= h4;
-			TEMPORARY[5] <= h5;
-			TEMPORARY[6] <= h6;
-			TEMPORARY[7] <= h7;
-			cur_we <= 1;
-			cur_addr <= temporary_write_address;
-			cur_write_data <= h0;
-		if(offset < 8) 
-		begin
-			cur_write_data <= TEMPORARY[offset+1];
-			offset <= offset + 1;
-			state <= WRITE;
-		end
-		
-		else begin
-		state <= IDLE;
-		end
-    end
-   endcase
-  end
-  
-  */
-	  //couldn't we do something like this above?
-	  
-	  
+
     WRITE: begin
 	if(i<8) begin
 	// Generate write request to memory starting from output_addr
@@ -328,7 +284,7 @@ WRITE: begin
 	    state <= IDLE;
 	end
 	endcase
-    end
+    end 
 
 // Generate done when SHA256 hash computation has finished and moved to IDLE state
 assign done = (state == IDLE);

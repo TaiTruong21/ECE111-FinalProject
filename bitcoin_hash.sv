@@ -19,10 +19,8 @@ parameter num_nonces = 16;
 
 logic [ 4:0] state;	// see params above; could have used enums instead
 logic [ 4:0] wc; //write counters
-logic [31:0] w[num_nonces][16];
 logic [ 6:0] t;
 logic [31:0] k1;
-logic [31:0] h[num_nonces][8];
 logic [31:0] hout[num_nonces];
 
 parameter int k[64] = '{
@@ -52,10 +50,7 @@ generate
 	  .hout      (hout[q]));
   end
 endgenerate
-//ZACK STARTED ADDING IN THIS FUNCTION HERE-------------------------------------------SAT, JUNE 5
-	
-	// SHOOT--YOU TOLD ME THAT WE JUST NEED TO FILL IN THE BLANKS BUT I ADDED MORE C0DE BC I DIDN'T KNOW THE PBLOCK DID SOME OF THIS STUFF. BUT IF YOU COMPARE THE ORIGINAL STARTER CODE,
-	//THEN YOU CAN DELETE THE STUFF I ADDED. BUT I THINK I FILLED IN ALL THE BLANKS (IDK IF WORKS THOUGH AHHH)
+
 always_ff @(posedge clk, negedge reset_n) 
   if(!reset_n) begin
     state <= IDLE;
@@ -64,115 +59,89 @@ always_ff @(posedge clk, negedge reset_n)
   else
     case(state)
       IDLE:	if(start) begin
-        mem_we   <= 0;
-        mem_addr <= message_addr;
-        t        <= 0;
+        mem_we   <= 0;	 // as we did in sha256 exercise (when do we write to memory?)
+        mem_addr <= mem_addr+wc;	 // as in sha256 -- set for reading message??
+        t        <= 0;	 // initialize (starting out) ... 
         state    <= PREP11;
       end
       PREP11: begin
         state    <= PREP12;
-        mem_addr <= mem_addr + 1;
+        mem_addr <= mem_addr+1;
       end
-      PREP12: begin
-	      for (int count = 0; count < num_nonces; count++) begin
-			 w[count][15] <= mem_read_data;
-		         h[count][0] <= 32'h6a09e667;
-	     	      h[count][1] <= 32'hbb67ae85;
-		      h[count][2] <= 32'h3c6ef372;
-		      h[count][3] <= 32'ha54ff53a;
-		      h[count][4] <= 32'h510e527f;
-		      h[count][5] <= 32'h9b05688c;
-		      h[count][6] <= 32'h1f83d9ab;
-		      h[count][7] <= 32'h5be0cd19;
-	      end //end for loop
-        state <= PREP13;
-        mem_addr <= mem_addr + 1;
-        k1 <= k[t];
+	  PREP12: begin
+        state    <= PREP13;
+        mem_addr <= mem_addr+1;
+        k1       <= k[t+1];
       end
 	  PREP13: begin
-		  for (int i = 0; i < num_nonces; i++) begin
-			  for (int j = 0; j < 15; j++)
-				  w[i][j] <= w[i][j + 1];
-			  	  w[i][15] <= mem_read_data;
-		  end
-        mem_addr <= mem_addr + 1;
+        mem_addr <= mem_addr+1;
         state    <= COMPUTE1;
-	k1       <= k[t+1];
-        t        <= t + 1;
+        k1       <= k[t+1];
+        t        <= t+1;
       end
-      COMPUTE1: begin //2:34PM
+      COMPUTE1: begin
         if (!(t[6] && t[0])) begin // t<65
-		for (int i = 0; i < num_nonces; i++)
-			begin
-				for (int j = 0; j < 15; j++)
-					w[i][j] <= w[i][j+1];
-			end
-		if (t<15) begin
-			for (int i = 0; i < num_nonces; i++)
-				w[i][15] <= mem_read_data;
-				mem_addr <= mem_addr + 1;
-		        end else begin
-				for (int i = 0; i < num_nonces; i++)
-					w[i][15] <= wt(i); //I THINK IT IS WT IN THE PBLOCK
-					mem_addr <= message_addr + 16;
-		        end
-				  t <= t + 1;
-				  state <= COMPUTE1;
-				  k1 <= k[t+1];
-				end else begin 
-				  t <= 0;
-				  mem_addr <= mem_addr + 1;
-				  state <= PREP21;
-				end
+          if (t<15) 
+            mem_addr <= mem_addr+1; 
+          else 
+            mem_addr <= mem_addr+16;       // jump by 16 to new block
+          k1 <= k[t+1];
+          t  <= t+1;
+        end 
+        else begin
+          t        <= t+1;
+          mem_addr <= mem_addr+1;
+          state    <= PREP21;
+        end
       end
       PREP21: begin
-        state    <= PREP22; //SO I AM CONFUSED--SO FROM THIS POINT FORWARD I WILL NOT PROVIDE THE IF ELSE STATEMENTS AND WILL JUST FILL IN THE VARIABLES
-        mem_addr <= mem_addr + 1;
-	k1       <= k[t];
+        state    <= PREP22;
+        mem_addr <= mem_addr+1;
+        k1       <= k[t];
       end
       PREP22: begin
-        mem_addr <= mem_addr + 1;
+        mem_addr <= mem_addr+1;
         state    <= COMPUTE2;
-	k1       <= k[t + 1];
-        t        <= t + 1;
+        k1       <= k[t+1];
+        t        <= t+1;
       end
       COMPUTE2: begin
         if (!(t[6] && t[0])) begin // t<65
           if (t<2) 
-            mem_addr <= mem_addr + 1;
-	  k1 <= k[t+1];
-          t <= t + 1;
+            mem_addr <= mem_addr+1;
+          k1 <= k[t+1];
+          t <= t+1;
         end 
         else begin
-          t     <= 0;
+          t     <= t+1;
           state <= PREP31;
         end
       end
       PREP31: begin
         state <= PREP32;
-	      k1    <= k[t];
+        k1    <= k[t];
       end
       PREP32: begin
           state <= COMPUTE3;
-	  k1    <= k[t+1];
-          t     <= t + 1;
+          k1    <= k[t+1];
+          t     <= t+1;
       end
 	  COMPUTE3: begin
         if (!(t[6] && t[0])) begin // t<65
-	  k1 <= k[t+1]
-          t  <= t + 1;
+          k1 <= k[t+1];
+          t  <= t+1;
         end 
         else begin
-	  wc    <= 1; //what the heck is wc here??? (i just put 1)
+          wc    <= output_addr;
           state <= WRITE;
         end
       end
       WRITE: begin
         if (wc < num_nonces) begin
-	  mem_we         <= 1; //what is mem_we here? (i just put 1)
-          mem_addr       <= output_addr + wc;
-	  mem_write_data <= h[wc][0];
-          wc             <= wc + 1;
+          mem_we         <= 1; 
+          mem_addr       <= wc;
+          mem_write_data <= hout[wc];
+          wc             <= wc+1;
         end 
         else begin
           state <= IDLE;
