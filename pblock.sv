@@ -32,7 +32,9 @@ parameter int p3[16] = '{
 };
 
 function logic [31:0] rightrotate(input [31:0] x, input  [7:0] r);
-
+begin
+    rightrotate = (x >> r) | (x << (32-r));
+end
 endfunction
 
 logic [31:0] t1, t2;
@@ -45,7 +47,7 @@ logic [31:0] t1, t2;
     t2 = S0 + maj; 
 	sha256_op = {t1 + t2, a, b, c, d + t1, e, f, g};*/
 
-assign t1 = H + (rightrotate(E,6)^ rightrotate(E, 11) ^ rightrotate(E, 25)) + ((E&F) ^ ((~E)&G) )+ k1[t] + temp ;
+assign t1 = (rightrotate(E,6)^ rightrotate(E, 11) ^ rightrotate(E, 25)) + ((E&F) ^ ((~E)&G) ) + temp ;
 assign t2 = (rightrotate(A, 2) ^ rightrotate(A, 13) ^ rightrotate(A, 22)) +((A&B)^(A&C)^(B&C));
 
 assign hout = h[0];
@@ -95,7 +97,7 @@ always_ff @(posedge clk) begin
         default: begin
           if (t<7) begin
 		    w[15] <=  h2[0];
-            for (int m = 0; m < 7; m++) h2[m] <= h2[n+1]; // move h2[15:1] down to h2[14:0]
+            for (int m = 0; m < 7; m++) h2[m] <= h2[m+1]; // move h2[15:1] down to h2[14:0]
           end
           else
             w[15] <= p3[t];
@@ -110,7 +112,7 @@ always_ff @(posedge clk) begin
 	  end
       else if (state[4:1]==4'b0101) begin // PREP31, PREP32
 		w[15] <= h2[0];					// as above in t<7 case
-        for (int m = 0; m < 7; m++) h2[m] <= h2[n+1];    //as above 
+        for (int m = 0; m < 7; m++) h2[m] <= h2[m+1];    //as above 
       end 
     else 
 		w[15] <= mem_read_data;    // Fetch more data

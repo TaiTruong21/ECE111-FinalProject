@@ -23,6 +23,7 @@ logic [ 6:0] t;
 logic [31:0] k1;
 logic [31:0] hout[num_nonces];
 
+
 parameter int k[64] = '{
     32'h428a2f98,32'h71374491,32'hb5c0fbcf,32'he9b5dba5,32'h3956c25b,32'h59f111f1,32'h923f82a4,32'hab1c5ed5,
     32'hd807aa98,32'h12835b01,32'h243185be,32'h550c7dc3,32'h72be5d74,32'h80deb1fe,32'h9bdc06a7,32'hc19bf174,
@@ -44,7 +45,7 @@ generate
 	  .clk       (clk),    // make the connections -- easy: match the port names
 	  .state     (state), 
 	  .t         (t), 
-	  .n         (n),
+	  .n         (q),
 	  .mem_read_data(mem_read_data),
 	  .k1        (k1),
 	  .hout      (hout[q]));
@@ -59,9 +60,9 @@ always_ff @(posedge clk, negedge reset_n)
   else
     case(state)
       IDLE:	if(start) begin
-        mem_we   <= 0;	 // as we did in sha256 exercise (when do we write to memory?)
-        mem_addr <= mem_addr+wc;	 // as in sha256 -- set for reading message??
-        t        <= 0;	 // initialize (starting out) ... 
+        mem_we   <= 0;	 			 // as we did in sha256 exercise (when do we write to memory?)
+        mem_addr <= message_addr;	 // as in sha256 -- set for reading message??
+        t        <= 0;	 			 // initialize (starting out) ... 
         state    <= PREP11;
       end
       PREP11: begin
@@ -71,7 +72,7 @@ always_ff @(posedge clk, negedge reset_n)
 	  PREP12: begin
         state    <= PREP13;
         mem_addr <= mem_addr+1;
-        k1       <= k[t+1];
+        k1       <= k[t];
       end
 	  PREP13: begin
         mem_addr <= mem_addr+1;
@@ -89,7 +90,7 @@ always_ff @(posedge clk, negedge reset_n)
           t  <= t+1;
         end 
         else begin
-          t        <= t+1;
+          t        <= 0;
           mem_addr <= mem_addr+1;
           state    <= PREP21;
         end
@@ -113,7 +114,7 @@ always_ff @(posedge clk, negedge reset_n)
           t <= t+1;
         end 
         else begin
-          t     <= t+1;
+          t     <= 0;
           state <= PREP31;
         end
       end
@@ -132,14 +133,14 @@ always_ff @(posedge clk, negedge reset_n)
           t  <= t+1;
         end 
         else begin
-          wc    <= output_addr;
+          wc    <= 0;  //initialize 0?
           state <= WRITE;
         end
       end
       WRITE: begin
         if (wc < num_nonces) begin
           mem_we         <= 1; 
-          mem_addr       <= wc;
+          mem_addr       <= output_addr+wc;
           mem_write_data <= hout[wc];
           wc             <= wc+1;
         end 
