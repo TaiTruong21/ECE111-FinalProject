@@ -96,7 +96,7 @@ begin
     // SET MESSAGE LOCATION
 
     message_addr = 32'd0;
-    output_addr  = 32'd1000;
+    output_addr  = 32'd32;
 
     // CREATE AND DISPLAY 19 WORD HEADER
 

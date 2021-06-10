@@ -85,7 +85,7 @@ always_ff @(posedge clk, negedge reset_n)
           if (t<15) 
             mem_addr <= mem_addr+1; 
           else 
-            mem_addr <= mem_addr+16;       // jump by 16 to new block
+            mem_addr <= message_addr+16;       // jump by 16 to new block
           k1 <= k[t+1];
           t  <= t+1;
         end 
